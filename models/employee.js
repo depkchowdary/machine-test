@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 
-const empSchema = function(){
-    this.empSchema = mongoose.Schema({
+const empSchema =  mongoose.Schema({
         name: String,
         email: String,
         address: String,
@@ -10,9 +9,4 @@ const empSchema = function(){
         empPhoto: String
     })
 
-    return{
-        empSchema,
-    }
-}
-
-module.exports = empSchema();
+module.exports = mongoose.model("Employee", empSchema)
