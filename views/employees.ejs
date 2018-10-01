@@ -1,7 +1,78 @@
 <% include ./partials/header.ejs %>
-    <div>
-        <h1>welcome! </h1>
-        <p>PFB list of employees</p>
+<div class="container">
+    <br>
+    <br>
+        <button class="btn btn-primary btn-block btn-lg" id="addEmployee">Add Employee</button>
+        <br>
+        <div style="width: 30% ; margin: 0 auto ; display:none" id="employeeForm" >
+                <form action="/employees" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input required class="form-control" type="text" name="employeeName" placeholder="Employee name" value="Deepak">
+                    </div>
+                    <div class="form-group">
+                        <input required class="form-control" type="email" name="email" placeholder="Email Id" value="test@test.com">
+                    </div>
+                    <div class="form-group">
+                        <textarea required class="form-control" style="rows: 10; columns:20 ;" type="text" name="address" placeholder="Address" value="Brooks Gardens, 989 White Place, Port Karlie ,Massachusetts, 75945"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <input required class="form-control" type="text" name="phoneNumber" placeholder="Mobile number" value="9999999999">
+                    </div>
+                    <div class="form-group">
+                        <input required class="form-control" type="text" name="desgination" placeholder="Designation" value="Assistant to the regional manager">
+                    </div>
+                    <div class="form-group">
+                        <input required class="form-control" type="file" name="empFile" placeholder="Employee Photo">
+                    </div>
+                    <button class="btn btn-primary btn-block">Add Employee</button>
+                </form>
+        </div>
+    <br>
+
+    <div class="row">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">Mobile Number</th>
+                    <th scope="col">Desgination</th>
+                    <th scope="col">Employee Photo</th>
+                    <th scope="col">Edit/Delete</th>
+                </tr>
+            </thead>
+        <% employees.forEach((employee , index) => { %>
+                    <tbody>
+                      <tr>
+                        <th scope="row"><%= index %></th>
+                        <td><%=employee.name %></td>
+                        <td><%=employee.email %></td>
+                        <td><%=employee.address %></td>
+                        <td><%=employee.phoneNo %></td>
+                        <td><%=employee.desgination %> </td>
+                        <td> <img src="/image/<%= employee.empPhoto %>"> </td>
+                        <% if(currentUser.id == employee.author.id){%>
+                         <td>
+                            <a class="btn btn-primary btn-sm" href="/employees/<%=employee._id%>/edit">Edit</a>
+                            <br>
+                            <form action="/employees/<%= employee._id%>?_method=DELETE" method="POST" id="post-ctrl">
+                                <button class="btn btn-danger" type="submit">Delete</button>
+                            </form>
+                         </td>   
+                        <% }else{ %> 
+                            <td>
+                                <p>Not a owner</p>
+                            </td>
+                        <% } %>
+                      </tr>
+                    
+            <% }) %>
+                    </tbody>
+                  </table>
     </div>
+</div>
+    
 
 <% include ./partials/footer.ejs %>

@@ -1,4 +1,30 @@
 
     </div> <!-- container-->
+    <script>
+        var addBtn = document.querySelector('#addEmployee')
+        var employeeForm = document.querySelector("#employeeForm")
+        addBtn.addEventListener('click', function(){
+            if(employeeForm.style.display === "none"){
+                employeeForm.style.display = "block"
+            }else{
+                employeeForm.style.display = "none"
+            }
+        })
+        
+        var password = document.getElementById("password"),
+            confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword(){
+    if(password.value != confirm_password.value) {
+        confirm_password.setCustomValidity("Passwords Don't Match");
+        return false
+    } else {
+        confirm_password.setCustomValidity('');
+        return true
+    }
+    }
+    
+
+    </script>
 </body>
 </html>

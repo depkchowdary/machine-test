@@ -1,27 +1,30 @@
 <% include ./partials/header.ejs %>
-<br>
-<br>
-<div class="row">
-        <h1 style="text-align: center">Register</h1>
-        <br>
-        <br>
-        <div style="width: 30% ; margin: 0 auto">
-            <form action="/register" method="POST">
-                <div class="form-group">
-                    <input class="form-control" type="text" name="username" placeholder="username">
-                </div>
-                <div class="form-group">
-                        <input class="form-control" type="email" name="email" placeholder="Someone@example.com">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name="password" placeholder="password">
-                </div>
-                <div class="form-group">
-                        <input class="form-control" type="password" name="confirm-password" placeholder="confirm password">
-                </div>
+<div class="container">
+    <br>
+    <br>
+    <div class="row">
+            <h1 style="text-align: center">Register</h1>
+            <br>
+            <br>
+            <div style="width: 30% ; margin: 0 auto">
+                <form action="/register" method="POST">
+                    <div class="form-group">
+                        <input class="form-control" required type="text" name="username" placeholder="username">
+                    </div>
+                    <div class="form-group">
+                            <input class="form-control" required type="email" name="email" placeholder="Someone@example.com">
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" required id="password" min="6" max="21" type="password" name="password" placeholder="password">
+                    </div>
+                    <div class="form-group">
+                            <input class="form-control" min="6" max="21" required id="confirm_password" type="password" name="confirm-password" placeholder="confirm password">
+                    </div>
+    
+                    <button class="btn btn-primary btn-block" onsubmit="validatePassword()">Sign up!</button>
+                </form>
+            </div>
+     </div>
+</div>
 
-                <button class="btn btn-primary btn-block">Sign up!</button>
-            </form>
-        </div>
- </div>
 <% include ./partials/footer.ejs %>

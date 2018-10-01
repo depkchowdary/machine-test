@@ -1,0 +1,30 @@
+<% include ./partials/header.ejs %>
+    <div class="container">
+        <div style="width: 30% ; margin: 0 auto;" id="employeeForm" >
+            <h3>Edit Employee - <%=foundEmployee.name %></h3>
+            <form action="/employees/<%=foundEmployee._id%>/edit?_method=PUT" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <input required class="form-control" type="text" name="employeeName" placeholder="Employee name" value="<%=foundEmployee.name %>">
+                </div>
+                <div class="form-group">
+                    <input required class="form-control" type="email" name="email" placeholder="Email Id" value="<%= foundEmployee.email %>">
+                </div>
+                <div class="form-group">
+                    <textarea required class="form-control" style="rows: 10; columns:20 ;" type="text" name="address" placeholder="Address" ><%= foundEmployee.address %></textarea>
+                </div>
+                <div class="form-group">
+                    <input required class="form-control" type="text" name="phoneNumber" placeholder="Mobile number" value="<%= foundEmployee.phoneNo %>">
+                </div>
+                <div class="form-group">
+                    <input required class="form-control" type="text" name="desgination" placeholder="Designation" value="<%= foundEmployee.desgination %>">
+                </div>
+                <div class="form-group">
+                    <input required class="form-control" type="file" name="empFile" placeholder="Employee Photo">
+                </div>
+                <button class="btn btn-primary btn-block">Update Employee</button>
+            </form>
+    </div>
+<br>
+    </div>
+
+<% include ./partials/footer.ejs %>
