@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.3",
+    "cloudinary": "^1.11.0",
     "connect-flash": "^0.1.1",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
@@ -25,6 +26,7 @@
     "pexels-api-wrapper": "^1.1.1"
   },
   "devDependencies": {
-    "faker": "^4.1.0"
+    "faker": "^4.1.0",
+    "heroku-cli": "^7.0.9"
   }
 }

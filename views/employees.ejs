@@ -22,7 +22,7 @@
                         <input required class="form-control" type="text" name="desgination" placeholder="Designation" value="Assistant to the regional manager">
                     </div>
                     <div class="form-group">
-                        <input required class="form-control" type="file" name="empFile" placeholder="Employee Photo">
+                        <input required class="form-control" accept="image/x-png,image/gif,image/jpeg" type="file" name="empFile" placeholder="Employee Photo">
                     </div>
                     <button class="btn btn-primary btn-block">Add Employee</button>
                 </form>
@@ -52,7 +52,7 @@
                         <td><%=employee.address %></td>
                         <td><%=employee.phoneNo %></td>
                         <td><%=employee.desgination %> </td>
-                        <td> <img src="/image/<%= employee.empPhoto %>"> </td>
+                        <td> <img src="<%= employee.empPhoto %>"> </td>
                         <% if(currentUser.id == employee.author.id){%>
                          <td>
                             <a class="btn btn-primary btn-sm" href="/employees/<%=employee._id%>/edit">Edit</a>

@@ -5,8 +5,11 @@ const mongoose = require('mongoose')
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
 const methodOverride = require('method-override')
-
+const cloudinary = require('cloudinary')
 const upload = require('express-fileupload')
+const path = require('path')
+
+const fakeEmployees = require('./seedDb.js')
 
 //Can use http verbs using query string
 app.use(methodOverride('_method'))
@@ -15,14 +18,18 @@ app.use(upload())
 
 const User = require('./models/user')
 const Employee = require('./models/employee')
-
 const flash = require('connect-flash')
 
 
-//passport config
+cloudinary.config({
+    cloud_name: 'depk',
+    api_secret: '7QO8JSyxyK2nliqsoV70Ca7zyyw',
+    api_key: '749142549941399'
+}) 
+
+
 
 //Session config
-
 app.use(require("express-session")({
     secret: "exceptionaire-Top web app development company in pune",
     resave: false,
@@ -44,7 +51,7 @@ passport.use(new LocalStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
-//adding flash to every req object
+//adding this to every res object
 app.use(function(req, res, next) {
     res.locals.errorMessage = req.flash("error");
     res.locals.successMessage = req.flash("success");
@@ -67,9 +74,22 @@ app.get("/register", (req, res) => {
     res.render('./register.ejs')
 })
 
-app.post("/register", function(req, res) {
+app.get("/generate-random-employees", (req, res) => {
+    fakeEmployees.forEach((emp, index) => {
+        Employee.create({name: emp.name,address: emp.address, email: emp.emailId, desgination: emp.designation, phoneNo:emp.phoneNumber, empPhoto: emp.empPhoto}, function(err, data){
+            if(err){
+                console.log(err)
+            }else{
+                console.log("seeded "+ index + " employees ")
+            }
+        })
+    })
+    res.render("./index", {successMessage: "5 Random employees are generated"})
 
-    console.log(req.body)
+})
+
+
+app.post("/register", function(req, res) {
     User.register(new User({ username: req.body.username, email: req.body.email }), req.body.password, function(err, user) {
 
         if (err) {
@@ -130,14 +150,10 @@ app.post("/employees", isLoggedIn, (req, res) => {
     if(req.files){
         var file = req.files.empFile,
             fileName = file.name
-        
-        file.mv("./empdata/"+fileName,(err)=> {
-            if(err){
-                console.log(err)
-            }else{
-                
-            }
-        }) 
+        cloudinary.v2.uploader.upload(file.data, 
+            function(error, result) {
+                console.log(result, error)
+            }); 
     }
     let employee = {
         name,
@@ -226,11 +242,12 @@ app.delete("/employees/:id", (req , res) => {
     
 })
 
+
+
+
 app.get("/image/:filename", (req, res) => {
     res.sendFile(path.join(__dirname, req.params.filename));
   });
-
-
 
 const port = 8081
 app.listen(port, function(){
