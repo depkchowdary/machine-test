@@ -6,7 +6,6 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local')
 const methodOverride = require('method-override')
 const cloudinary = require('cloudinary')
-const upload = require('express-fileupload')
 const path = require('path')
 
 const fakeEmployees = require('./seedDb.js')
@@ -14,7 +13,6 @@ const fakeEmployees = require('./seedDb.js')
 //Can use http verbs using query string
 app.use(methodOverride('_method'))
 
-app.use(upload())
 
 const User = require('./models/user')
 const Employee = require('./models/employee')
@@ -59,6 +57,21 @@ app.use(function(req, res, next) {
     next();
 })
 
+//Multer config
+var multer = require('multer');
+var storage = multer.diskStorage({
+  filename: function(req, file, callback) {
+    callback(null, Date.now() + file.originalname);
+  }
+});
+var imageFilter = function (req, file, cb) {
+    // accept image files only
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+};
+var upload = multer({ storage: storage, fileFilter: imageFilter})
 
 
 app.set('view engine', 'ejs')
@@ -128,6 +141,17 @@ function isLoggedIn(req, res, next) {
     res.redirect("/login")
 }
 
+function isOwner(req, res, next){
+    Employee.findById(req.params.id, (error, foundEmployee) => {
+        if(foundEmployee.author.id === req.user.id){
+            return next();
+        }
+        res.locals.errorMessage = "Ownership check failed"
+        res.redirect("/employees")
+    })
+}
+
+
 app.get("/employees",isLoggedIn, (req, res) => {
     Employee.find({} ,function(err, employees){
         if(err){
@@ -140,41 +164,28 @@ app.get("/employees",isLoggedIn, (req, res) => {
     })
 })
 
-app.post("/employees", isLoggedIn, (req, res) => {
-
-    let name = req.body.employeeName,
-        email = req.body.email,
-        address = req.body.address,
-        desgination = req.body.desgination,
-        phoneNo = req.body.phoneNumber
-    if(req.files){
-        var file = req.files.empFile,
-            fileName = file.name
-        cloudinary.v2.uploader.upload(file.data, 
+app.post("/employees", isLoggedIn,upload.single('employee[empPhoto]'), (req, res) => {
+    if(req.file){
+        cloudinary.v2.uploader.upload(req.file.path, 
             function(error, result) {
-                console.log(result, error)
+                if(error){
+                    res.render("./employees", {errorMessage: "Employee photo upload failed. Please edit from edit page"})
+                }else{
+                    req.body.employee.empPhoto = result.secure_url
+                    req.body.employee.author = {
+                        id: req.user.id,
+                        userName: req.user.username
+                    }
+                    Employee.create(req.body.employee, function(err, newEmployee){
+                        if(err){
+                            res.redirect("/", {errorMessage: "Adding new employee failed"})
+                        }else{
+                            res.redirect("/employees")
+                        }
+                    })
+                }
             }); 
     }
-    let employee = {
-        name,
-        email,
-        address,
-        phoneNo,
-        desgination,
-        empPhoto : req.files.empFile.name,
-        author: {
-            id: req.user.id,
-            userName: req.user.username
-        }
-    }
-    Employee.create(employee, function(err, newEmployee){
-        if(err){
-            res.redirect("/", {errorMessage: "Adding new employee failed"})
-        }else{
-            console.log(newEmployee)
-            res.redirect("/employees")
-        }
-    })
 })
 
 app.get("/employees/:id/edit", (req, res) => {
@@ -194,42 +205,37 @@ app.get("/employees/:id/edit", (req, res) => {
 })
 
 
-app.put("/employees/:id/edit" , (req, res) => {
+app.put("/employees/:id/edit" ,isLoggedIn,isOwner,upload.single('employee[empPhoto]'), (req, res) => {
 
-    let name = req.body.employeeName,
-        email = req.body.email,
-        address = req.body.address,
-        desgination = req.body.desgination,
-        phoneNo = req.body.phoneNumber
-
-    let updatedEmployee = {
-        name,
-        email,
-        address,
-        phoneNo,
-        desgination,
-        empPhoto : req.files.empFile.name,
-        author: {
-            id: req.user.id,
-            userName: req.user.username
-        }
-    }
-
-    Employee.findByIdAndUpdate(req.params.id,updatedEmployee ,(err, updatedEmployee)=> {
-        if(err){
-            res.redirect("/")
-        }else if(!updatedEmployee){y
-            res.render("./employees",{errorMessage: "Employee updation failed"} )
+    cloudinary.v2.uploader.upload(req.file.path, (error, result) => {
+        if(error){
+            res.render("./employees", {errorMessage : "Employee updation failed due to errors"})
         }else{
-            Employee.find({}, (err, employees) => {
-                res.render("./employees", {successMessage: "Employee "+updatedEmployee.name+" details are updated", employees: employees})
+            req.body.employee.author = {
+                id: req.user.id,
+                userName: req.user.userName
+            }
+            req.body.employee.empPhoto = result.secure_url  
+            Employee.findByIdAndUpdate(req.params.id,req.body.employee ,(err, updatedEmployee)=> {
+                if(err){
+                    res.redirect("/")
+                }else if(!updatedEmployee){
+                    res.render("./employees",{errorMessage: "Employee updation failed"} )
+                }else{
+                    Employee.find({}, (err, employees) => {
+                        res.render("./employees", {successMessage: "Employee "+updatedEmployee.name+" details are updated", employees: employees})
+                    })
+                    
+                }
             })
-            
         }
+
     })
+
+
 })
 
-app.delete("/employees/:id", (req , res) => {
+app.delete("/employees/:id",isLoggedIn, (req , res) => {
     Employee.findByIdAndDelete(req.params.id,(err) => {
         if(err){
             res.render("./index.ejs", {errorMessage: "Could delete the employee.Please try again later"})
@@ -243,11 +249,6 @@ app.delete("/employees/:id", (req , res) => {
 })
 
 
-
-
-app.get("/image/:filename", (req, res) => {
-    res.sendFile(path.join(__dirname, req.params.filename));
-  });
 
 const port = 8081
 app.listen(port, function(){
